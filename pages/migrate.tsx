@@ -1,21 +1,22 @@
 import type { NextPage } from "next";
 import Head from "next/head";
 import styles from "../styles/Home.module.css";
-import { clearIdb, createDb } from "../db/db";
+import { createDb } from "../db/db";
 import { useState, useEffect } from "react";
 
 const Home: NextPage = () => {
   const [items, setItems] = useState([]);
   useEffect(() => {
     (async () => {
-      await clearIdb();
+      const db = await createDb(1);
 
-      const db = await createDb(0);
-      const item = await db.heroes.insert({
-        id: "test-123",
-        name: "hello",
-      });
-      setItems([item.toJSON()]);
+      const res = await db.heroes
+        .find({
+          selector: {},
+        })
+        .exec();
+
+      setItems(res.map((doc) => doc.toJSON()));
     })();
   }, []);
 
@@ -28,10 +29,7 @@ const Home: NextPage = () => {
       </Head>
 
       <main>
-        Items: <br />
-        {JSON.stringify(items)}
-        <br />
-        <a href="/migrate">Migrate data</a>
+        Items after migration: <br /> {JSON.stringify(items)}
       </main>
     </div>
   );
